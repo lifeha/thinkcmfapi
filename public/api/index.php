@@ -15,6 +15,9 @@ define("APP_DEBUG", true);
 // 定义应用目录
 define('APP_PATH', __DIR__ . '/../../api/');
 
+//定义应用命名空间
+define('APP_NAMESPACE','api')
+
 // 定义CMF目录
 define('CMF_PATH', __DIR__ . '/../../simplewind/cmf/');
 
