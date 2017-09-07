@@ -41,7 +41,7 @@ class PublicController extends RestBaseController
         if (Validate::is($data['username'], 'email')) {
             $user['user_email'] = $data['username'];
             //$userQuery          = $userQuery->where('user_email', $data['username']);
-        } else if (preg_match('/(^(13\d|15[^4\D]|17[13678]|18\d)\d{8}|170[^346\D]\d{7})$/', $data['username'])) {
+        } else if (preg_match('/(^(13\d|15[^4\D]|17[013678]|18\d)\d{8})$/', $data['username'])) {
             $user['mobile'] = $data['username'];
             //$userQuery      = $userQuery->where('mobile', $data['username']);
         } else {
@@ -95,7 +95,7 @@ class PublicController extends RestBaseController
         $userQuery = Db::name("user");
         if (Validate::is($data['username'], 'email')) {
             $userQuery = $userQuery->where('user_email', $data['username']);
-        } else if (preg_match('/(^(13\d|15[^4\D]|17[13678]|18\d)\d{8}|170[^346\D]\d{7})$/', $data['username'])) {
+        } else if (preg_match('/(^(13\d|15[^4\D]|17[013678]|18\d)\d{8})$/', $data['username'])) {
             $userQuery = $userQuery->where('mobile', $data['username']);
         } else {
             $userQuery = $userQuery->where('user_login', $data['username']);
@@ -162,6 +162,13 @@ class PublicController extends RestBaseController
     // 用户退出
     public function logout()
     {
+        $userId = $this->getUserId();
+        Db::name('user_token')->where([
+            'token'       => $this->token,
+            'user_id'     => $userId,
+            'device_type' => $this->deviceType
+        ])->update(['token' => '']);
+
         $this->success("退出成功!");
     }
 
@@ -188,7 +195,7 @@ class PublicController extends RestBaseController
         $userWhere = [];
         if (Validate::is($data['username'], 'email')) {
             $userWhere['user_email'] = $data['username'];
-        } else if (preg_match('/(^(13\d|15[^4\D]|17[13678]|18\d)\d{8}|170[^346\D]\d{7})$/', $data['username'])) {
+        } else if (preg_match('/(^(13\d|15[^4\D]|17[013678]|18\d)\d{8})$/', $data['username'])) {
             $userWhere['mobile'] = $data['username'];
         } else {
             $this->error("请输入正确的手机或者邮箱格式!");
@@ -199,8 +206,8 @@ class PublicController extends RestBaseController
             $this->error($errMsg);
         }
 
-        $userPass=cmf_password($data['password']);
-        Db::name("user")->where($userWhere)->update(['user_pass'=>$userPass]);
+        $userPass = cmf_password($data['password']);
+        Db::name("user")->where($userWhere)->update(['user_pass' => $userPass]);
 
         $this->success("密码重置成功,请使用新密码登录!");
 
