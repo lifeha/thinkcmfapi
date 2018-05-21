@@ -54,7 +54,7 @@ class FavoritesController extends RestUserBaseController
         if (!$data) {
             $this->error('收藏失败');
         }
-        if ($this->userFavoriteModel->where('object_id', $input['object_id'])->where('table_name', $input['table'])->count() > 0) {
+        if ($this->userFavoriteModel->where(['user_id' => $this->getUserId(), 'object_id' => $input['object_id']])->where('table_name', $input['table_name'])->count() > 0) {
             $this->error('已收藏');
         }
         if ($this->userFavoriteModel->setFavorite($data)) {
@@ -80,8 +80,6 @@ class FavoritesController extends RestUserBaseController
         if (empty($title)) {
             return false;
         } else if (empty($url)) {
-            return false;
-        } elseif (empty($description)) {
             return false;
         } elseif (empty($table_name)) {
             return false;

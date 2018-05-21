@@ -11,7 +11,6 @@ namespace api\portal\controller;
 
 use cmf\controller\RestBaseController;
 use api\portal\model\PortalPostModel;
-use api\portal\model\PortalTagPostModel;
 
 class ArticlesController extends RestBaseController
 {
@@ -31,7 +30,13 @@ class ArticlesController extends RestBaseController
         $params                       = $this->request->get();
         $params['where']['post_type'] = 1;
         $data                         = $this->postModel->getDatas($params);
-        $this->success('请求成功!', $data);
+
+        if (isset($this->apiVersion)) {
+            $response = ['list' => $data,];
+        } else {
+            $response = $data;
+        }
+        $this->success('请求成功!', $response);
     }
 
     /**
@@ -50,6 +55,7 @@ class ArticlesController extends RestBaseController
             if (empty($data)) {
                 $this->error('文章不存在！');
             } else {
+                $this->postModel->where('id', $id)->setInc('post_hits');
                 $this->success('请求成功!', $data);
             }
 
@@ -163,5 +169,23 @@ class ArticlesController extends RestBaseController
             $this->error('搜索关键词不能为空！');
         }
 
+    }
+
+    public function doLike()
+    {
+        $userId = $this->getUserId();
+
+        $articleId = $this->request->param('id', 0, 'intval');
+
+        $canLike = cmf_check_user_action(['object' => "posts$articleId", 'user_id' => $userId], 1);
+
+        if ($canLike) {
+            $this->postModel->where(['id' => $articleId])->setInc('post_like');
+
+            $likeCount = $this->postModel->where('id', $articleId)->value('post_like');
+            $this->success("赞好啦！", ['post_like' => $likeCount]);
+        } else {
+            $this->error("您已赞过啦！");
+        }
     }
 }

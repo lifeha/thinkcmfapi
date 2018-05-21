@@ -94,7 +94,13 @@ class PortalPostModel extends CommonModel
      */
     public function getPublishedTimeAttr($value)
     {
-        return date('Y-m-d H:i:s', $value);
+        // 兼容老版本 1.0.0的客户端
+        $apiVersion = request()->header('XX-Api-Version');
+        if (empty($apiVersion)) {
+            return date('Y-m-d H:i:s', $value);
+        } else {
+            return $value;
+        }
     }
 
     /**
@@ -108,6 +114,16 @@ class PortalPostModel extends CommonModel
             return $value;
         }
         return strtotime($value);
+    }
+
+    public function getPostTitleAttr($value)
+    {
+        return htmlspecialchars_decode($value);
+    }
+
+    public function getPostExcerptAttr($value)
+    {
+        return htmlspecialchars_decode($value);
     }
 
     /**
@@ -150,7 +166,7 @@ class PortalPostModel extends CommonModel
 
         if (!empty($more['files'])) {
             foreach ($more['files'] as $key => $value) {
-                $more['files'][$key]['url'] = cmf_get_image_url($value['url']);
+                $more['files'][$key]['url'] = cmf_get_file_download_url($value['url']);
             }
         }
         return $more;
@@ -419,10 +435,10 @@ class PortalPostModel extends CommonModel
     {
         $postUserId = $this->useGlobalScope(false)
             ->getFieldById($id, 'user_id');
-        if ($postUserId != $userId || $userId != 1) {
-            return false;
-        } else {
+        if ($postUserId == $userId || $userId == 1) {
             return true;
+        } else {
+            return false;
         }
     }
 
